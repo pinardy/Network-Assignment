@@ -52,7 +52,6 @@ public class Authentication {
         } catch (Exception e){
         	System.out.println("Certificate verification failed!");
         }
-    
     }
 
 
