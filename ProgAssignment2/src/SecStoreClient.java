@@ -1,4 +1,4 @@
-package ProgAssignment2.src;
+//package ProgAssignment2.src;
 
 
 import java.io.*;
@@ -20,9 +20,11 @@ public class SecStoreClient {
 	private static final String HOSTNAME = "localhost";
 	private static final String auMessage = "Hello, this is SecStore!";
 	private static final String serverCertStr = "serverCert.crt";
+	private static final String CACERT = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CA.crt";
 	private static PublicKey key;
 	
     public static void main(String[] args) throws Exception {
+
     	// Establish connection with SecStore
 		Socket echoSocket = new Socket();
 		SocketAddress sockaddr = new InetSocketAddress(HOSTNAME, PORT);
@@ -65,8 +67,9 @@ public class SecStoreClient {
         
         try{
         	X509Certificate serverCert = CreateX509Cert(serverCertStr);
+            X509Certificate CAcert = CreateX509Cert(CACERT);
             // Extract public key from serverCert
-            key = serverCert.getPublicKey();
+            key = CAcert.getPublicKey();
             // Verify that certificate is legitimate
             Verify(serverCert,key);
         } catch (Exception e){
@@ -84,7 +87,7 @@ public class SecStoreClient {
         
         // If check fail
         if (!checkResult){
-        	out.println("Bye!");
+        	out.println("Check failed! Disconnecting...");
         	out.close();
         	in.close();
         	echoSocket.close();
@@ -93,7 +96,7 @@ public class SecStoreClient {
         
         // If check succeeded
         else {
-        	
+        	out.println("Signed message is correct.");
         }
     }
     

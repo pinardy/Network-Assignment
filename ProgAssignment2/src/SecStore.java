@@ -1,4 +1,4 @@
-package ProgAssignment2.src;
+//package ProgAssignment2.src;
 
 
 import java.net.*;
@@ -16,11 +16,13 @@ import java.io.*;
 
 public class SecStore {
 	private static final int PORT = 4321;
-	private static final String privateKeyFile = "privateServer.der";
-	private static final String myCert = "1001520.crt";
+	private static final String privateKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\privateServer.der";
+	private static final String myCert = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\1001520.crt";
 
 
 	public static void main(String[] args) throws Exception {
+		System.out.println("Server started");
+
 		// Establish server connection
 		ServerSocket serverSocket = new ServerSocket(PORT);
 
@@ -72,7 +74,7 @@ public class SecStore {
 			System.out.println("Sent signed certificate to client.");
 			
 			// Wait for client's response
-
+			System.out.println(in.readLine());
 
 		} catch (Exception e){
 			e.printStackTrace();
