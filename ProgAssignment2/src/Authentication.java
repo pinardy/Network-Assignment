@@ -1,4 +1,4 @@
-package ProgAssignment2.src;
+//package ProgAssignment2.src;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,10 +14,10 @@ public class Authentication {
         Authentication au = new Authentication();
         
         // create X509Certificate object for CA.crt
-        X509Certificate CAcert = au.CreateX509Cert("CA.crt");
+        X509Certificate CAcert = au.CreateX509Cert("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CA.crt");
         
         // create X509Certificate object for 1001520.crt
-        X509Certificate MyCert = au.CreateX509Cert("1001520.crt");
+        X509Certificate MyCert = au.CreateX509Cert("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\1001520.crt");
         
         // extract public key from CAcert
         PublicKey key = CAcert.getPublicKey();

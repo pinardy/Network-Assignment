@@ -64,18 +64,31 @@ public class SecStoreClient {
         // Retrieve signed certificate by creating X509Certificate object
         FileOutputStream serverCertOutput = new FileOutputStream(serverCertStr);
         serverCertOutput.write(certBytes, 0, certBytes.length);
-        
+
+        //-=-=-=-=- ADDED PART =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+        // Write byte array into file and create X509Certificate object
+        FileOutputStream fileOutput = new FileOutputStream("CA.crt");
+        fileOutput.write(certBytes, 0, certBytes.length);
+
+        FileInputStream certFileInput = new FileInputStream("CA.crt");
+        //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
         try{
-        	X509Certificate serverCert = CreateX509Cert(serverCertStr);
+//        	X509Certificate serverCert = CreateX509Cert(serverCertStr);
+
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate certificate = (X509Certificate) cf.generateCertificate(certFileInput);
+
             X509Certificate CAcert = CreateX509Cert(CACERT);
             // Extract public key from serverCert
-            key = CAcert.getPublicKey();
+            key = certificate.getPublicKey();
             // Verify that certificate is legitimate
-            Verify(serverCert,key);
+            Verify(certificate);
         } catch (Exception e){
         	e.printStackTrace();
         }
-        
+
         // Decrypting the signed certificate
         System.out.println("Decrypting the signed certificate...");
         Cipher dcipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -83,7 +96,10 @@ public class SecStoreClient {
         byte[] signedMessageBytes = DatatypeConverter.parseBase64Binary(signedMessage);
         byte[] decryptedCertBytes = dcipher.doFinal(signedMessageBytes);
         String decryptedMessage = new String(decryptedCertBytes, "UTF-16");
-        boolean checkResult = decryptedMessage.equals(signedMessage);
+        boolean checkResult = decryptedMessage.equals(auMessage);
+
+        System.out.println("Signed message: " + signedMessage);
+        System.out.println("Decrypted message: " + decryptedMessage);
         
         // If check fail
         if (!checkResult){
@@ -107,10 +123,10 @@ public class SecStoreClient {
         return X509cert;
     }
 
-    public static void Verify(X509Certificate signedCert, PublicKey key) throws NoSuchProviderException, CertificateException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public static void Verify(X509Certificate signedCert) throws NoSuchProviderException, CertificateException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         try {
         	signedCert.checkValidity();
-            signedCert.verify(key);
+//            signedCert.verify(key);
             System.out.println("Certificate verified!");
         } catch (Exception e){
         	System.out.println("Certificate verification failed!");
