@@ -1,4 +1,4 @@
-package Server;
+package CP2.Server;
 
 
 import java.net.*;
@@ -16,8 +16,10 @@ import java.io.*;
 
 public class SecStore {
 	private static final int PORT = 4321;
-	private static final String privateKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\privateServer.der";
-	private static final String myCert = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\1001520.crt";
+    //	private static final String privateKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\privateServer.der";
+    //	private static final String myCert = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\1001520.crt";
+    private static final String privateKeyFile = "privateServer.der";
+    private static final String myCert = "1001520.crt";
 
 
 	public static void main(String[] args) throws Exception {
@@ -131,8 +133,8 @@ public class SecStore {
                 byte[] decryptedFileBytes = decryptFile(encryptedBytes, dcipher);
 
                 // Write to file
-//                FileOutputStream fileOutput = new FileOutputStream(filename);
-                FileOutputStream fileOutput = new FileOutputStream("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\smallFile.txt");
+                FileOutputStream fileOutput = new FileOutputStream(filename);
+//                FileOutputStream fileOutput = new FileOutputStream("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\smallFile.txt");
                 fileOutput.write(decryptedFileBytes, 0, decryptedFileBytes.length);
                 fileOutput.close();
 

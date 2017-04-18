@@ -1,4 +1,4 @@
-package Client;
+package CP1.Client;
 
 
 import java.io.*;
@@ -19,9 +19,10 @@ import javax.xml.bind.DatatypeConverter;
 public class SecStoreClient {
     private static final int PORT = 4321;
     private static final String HOSTNAME = "localhost";
-    private static final String publicKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Client\\publicServer.der";
+//    private static final String publicKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Client\\publicServer.der";
+    private static final String publicKeyFile = "publicServer.der";
     private static final String auMessage = "Hello, this is SecStore!";
-    private static final String serverCertStr = "serverCert.crt";
+//    private static final String serverCertStr = "serverCert.crt";
     private static PublicKey key;
 
     public static void main(String[] args) throws Exception {
@@ -66,8 +67,8 @@ public class SecStoreClient {
             certBytes = DatatypeConverter.parseBase64Binary(certBytesStr);
 
             // Retrieve signed certificate by creating X509Certificate object
-            FileOutputStream serverCertOutput = new FileOutputStream(serverCertStr);
-            serverCertOutput.write(certBytes, 0, certBytes.length);
+//            FileOutputStream serverCertOutput = new FileOutputStream(serverCertStr);
+//            serverCertOutput.write(certBytes, 0, certBytes.length);
 
             //-=-=-=-=- ADDED PART =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
             // Write byte array into file and create X509Certificate object
@@ -166,8 +167,8 @@ public class SecStoreClient {
             out.println(System.currentTimeMillis());
 
             //TODO: Get files (from command line arguments) & bytes for encryption
-//        File file = new File(args[0]); // cmd line
-            File file = new File("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Client\\smallFile.txt"); // IDE
+        File file = new File(args[0]); // cmd line
+//            File file = new File("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Client\\smallFile.txt"); // IDE
             byte[] fileBytes = new byte[(int) file.length()];
             BufferedInputStream fileInput = null;
             try {
@@ -184,8 +185,8 @@ public class SecStoreClient {
             byte[] encryptedFileBytes = encryptFile(fileBytes, ecipher);
 
             //TODO: Send over file name (Change depending on IDE/cmdline)
-//        out.println(args[0]); // command line argument
-            out.println("smallFile.txt"); // IDE
+            out.println(args[0]); // command line argument
+//            out.println("smallFile.txt"); // IDE
 
             // send filesize in bytes
             out.println(encryptedFileBytes.length);
