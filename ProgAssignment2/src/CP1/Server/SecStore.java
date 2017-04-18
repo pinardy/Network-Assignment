@@ -1,5 +1,4 @@
-package CP1.Server;
-
+package CP1.server;
 
 import java.net.*;
 import java.nio.file.Files;
@@ -8,25 +7,21 @@ import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-
 import javax.crypto.Cipher;
 import javax.xml.bind.DatatypeConverter;
-
 import java.io.*;
 
 public class SecStore {
 	private static final int PORT = 4321;
-    //	private static final String privateKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\privateServer.der";
-    //	private static final String myCert = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\1001520.crt";
-    private static final String privateKeyFile = "privateServer.der";
-    private static final String myCert = "1001520.crt";
+	private static final String privateKeyFile = "privateServer.der";
+	private static final String myCert = "1001520.crt";
 
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("Server started");
-
 		// Establish server connection
 		ServerSocket serverSocket = new ServerSocket(PORT);
+		
+		System.out.println("Server started");
 
 		// Retrieve private key from privateServer.der file to sign message
 		Path path = Paths.get(privateKeyFile);
@@ -58,39 +53,39 @@ public class SecStore {
 					new InputStreamReader(System.in));
 			
 			// Waiting for client to make request
-			System.out.println(in.readLine());
+			System.out.println("Client: " + in.readLine());
 
 			// Retrieve authentication message and sign message before sending to client
-            // Infinite loop until authentication message matches
-            String auMessage;
-            while (true){
-			    auMessage = serverIn.readLine();
-			    if (auMessage.equals("Hello, this is SecStore!")) {
+			String auMessage = in.readLine();
+			System.out.println("Authentication message: " + auMessage);
+			while (true){
+			    String serverInput = serverIn.readLine();
+			    if (serverInput.equals(auMessage)) {
                     break;
                 } else {
                     System.out.println("Authentication message did not match. Please try again!");
                 }
             }
+			
 			byte[] signedMessageBytes = ecipher.doFinal(auMessage.getBytes("UTF-16"));
 			String signedMessage = DatatypeConverter.printBase64Binary(signedMessageBytes);
 
-			// send signed message to client
+			// Send signed message to client
 			out.println(signedMessage);
 			System.out.println("Sent signed message to client.");
 
 			// Waiting for client to make request
-			System.out.println(in.readLine());
+			System.out.println("Client: " + in.readLine());
 
 			// Send signed certificate to the client
 			out.println(certBytes.length);
 			out.println(certStr);
 			System.out.println("Sent signed certificate to client.");
 			
-			// Wait for client's response for cert request
-			String msg = in.readLine();
-			System.out.println(msg); // should say "Signed message is correct."
+//			// Wait for client's response
+			System.out.println("Client: " + in.readLine()); 
 
-			// Wait for nonce
+			// Wait for client to send nonce
             String nonceString = in.readLine();
             byte[] nonce = new byte[32];
             nonce = DatatypeConverter.parseBase64Binary(nonceString);
@@ -103,29 +98,27 @@ public class SecStore {
             Cipher dcipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             dcipher.init(Cipher.DECRYPT_MODE, myPrivateKey);
 
-            // client sends its intention to start transfer
-            String clientMessage = in.readLine();
+            // Wait for client response
+            System.out.println("Client: " + in.readLine());
+            
+            // Authentication protocol done, starting file transfer
             System.out.println("\n---FILE TRANSFER---");
-
+            
+            String clientMessage = in.readLine();
             System.out.println(clientMessage);
-            while(clientMessage.equals("Client is sending over file...")){
-                // client sends over upload start time
+            while (clientMessage.equals("Client is sending over file...")){
+                // Client sends over file upload start time
                 long startTime = Long.parseLong(in.readLine());
 
-                // client sends over file name
-                String filename = "";
-                try {
-                    filename = in.readLine();
-                } catch (Exception e) {
-                    System.out.println("Client did not input legal file\n" + "Program terminating...");
-                }
+                // Client sends over file name
+                String fileName = in.readLine();
 
-                // client sends filesize in bytes over
+                // Client sends filesize in bytes over
                 int fileSize = Integer.parseInt(in.readLine());
                 System.out.println("File size: " + fileSize + " bytes");
                 byte[] encryptedBytes = new byte[fileSize];
 
-                // receive byteString
+                // Receives byteString
                 String byteString = in.readLine();
                 encryptedBytes = DatatypeConverter.parseBase64Binary(byteString);
 
@@ -133,24 +126,24 @@ public class SecStore {
                 byte[] decryptedFileBytes = decryptFile(encryptedBytes, dcipher);
 
                 // Write to file
-                FileOutputStream fileOutput = new FileOutputStream(filename);
-//                FileOutputStream fileOutput = new FileOutputStream("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\smallFile.txt");
+                FileOutputStream fileOutput = new FileOutputStream("testOutput.txt"); // for testing
+//                FileOutputStream fileOutput = new FileOutputStream(fileName);
                 fileOutput.write(decryptedFileBytes, 0, decryptedFileBytes.length);
                 fileOutput.close();
 
                 // Display upload duration
                 System.out.println("\nFile transfer complete!");
-                System.out.println("Time taken: " + (System.currentTimeMillis() - startTime) + " milliseconds for " + filename + " to be uploaded.");
+                System.out.println("Time taken: " + (System.currentTimeMillis() - startTime) + " milliseconds for " + fileName + " to be uploaded.");
                 out.println("Upload completed");
 
                 // Check client message
                 clientMessage = in.readLine();
             }
+            
             in.close();
             out.close();
 
 		} catch (Exception e){
-//			e.printStackTrace();
 		}
 
 		certInput.close();
@@ -163,12 +156,9 @@ public class SecStore {
         int start = 0;
         int fileSize = encryptedData.length;
         while (start < fileSize) {
-            //System.out.println("Start: " + start);
             byte[] tempBuff;
-
             /* RSA is a block cipher. No matter how long (or rather: short) the input,
              it will produce a 128 byte long output. That explains the 128. */
-
             if (fileSize - start >= 128) {
                 tempBuff = dcipher.doFinal(encryptedData, start, 128);
             } else {
