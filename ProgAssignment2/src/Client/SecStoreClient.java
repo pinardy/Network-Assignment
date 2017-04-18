@@ -1,16 +1,17 @@
-//package ProgAssignment2.src;
+package Client;
 
 
 import java.io.*;
 import java.net.*;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.xml.bind.DatatypeConverter;
@@ -18,9 +19,10 @@ import javax.xml.bind.DatatypeConverter;
 public class SecStoreClient {
 	private static final int PORT = 4321;
 	private static final String HOSTNAME = "localhost";
-	private static final String auMessage = "Hello, this is SecStore!";
+    private static final String publicKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Client\\publicServer.der";
+    private static final String auMessage = "Hello, this is SecStore!";
 	private static final String serverCertStr = "serverCert.crt";
-	private static final String CACERT = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CA.crt";
+	private static final String CACERT = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Client\\CA.crt";
 	private static PublicKey key;
 	
     public static void main(String[] args) throws Exception {
@@ -114,6 +116,90 @@ public class SecStoreClient {
         else {
         	out.println("Signed message is correct.");
         }
+
+        //TODO: Get public key from .der file
+        Path keyPath = Paths.get(publicKeyFile);
+        byte[] publicKeyBytes = Files.readAllBytes(keyPath);
+        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+        //TODO: Create encryption cipher
+        Cipher ecipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+        ecipher.init(Cipher.ENCRYPT_MODE, publicKey);
+
+        //TODO: Generate nonce
+        byte[] nonce = new byte[32];
+        Random rand = SecureRandom.getInstance("SHA1PRNG");
+        rand.nextBytes(nonce);
+        String nonceString = new String(nonce, "UTF-16"); // this is what we will compare to
+
+        //TODO: Send over nonce
+        System.out.println("\nSending over nonce");
+        out.println(DatatypeConverter.printBase64Binary(nonce));
+
+
+        //TODO: Check nonce
+        // getting the encrypted nonce
+        byte[] encryptedNonce = new byte[128];
+        String encryptedNonceString = in.readLine();
+        encryptedNonce = DatatypeConverter.parseBase64Binary(encryptedNonceString);
+
+        // decrypting the encrypted nonce and convert to a String
+        byte[] decryptedNonce = dcipher.doFinal(encryptedNonce);
+        String decryptedNonceString = new String(decryptedNonce, "UTF-16");
+
+        System.out.println("Nonce String: " + nonceString);
+        System.out.println("Decrypted Nonce String: " + decryptedNonceString);
+
+        // check if decrypted nonce is equal to the original nonce
+        boolean checkNonce = decryptedNonceString.equals(nonceString);
+
+        //TODO: Fix transfer of nonce
+        if (!checkNonce) { // close connection
+            System.out.println("Nonce failed to pass");
+            out.close();
+            in.close();
+            echoSocket.close();
+//            return;
+        }
+
+        System.out.println("\n---FILE TRANSFER---\n" + "Sending over file...");
+        out.println("Client is sending over file...");
+
+        // send time to client for recording duration of file transfer
+        out.println(System.currentTimeMillis());
+
+        //TODO: Get files (from command line arguments) & bytes for encryption
+//        for(int i = 0; i < args.length; i++) {
+//            File file = new File(args[i]); // cmd line
+            File file = new File("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Client\\smallFile.txt"); // IDE
+            byte[] fileBytes = new byte[(int) file.length()];
+            BufferedInputStream fileInput = new BufferedInputStream(new FileInputStream(file));
+            fileInput.read(fileBytes, 0, fileBytes.length);
+
+            fileInput.close();
+
+            //TODO: Encrypt files
+            byte[] encryptedFileBytes = encryptFile(fileBytes, ecipher);
+
+            //TODO: Send over file name
+//            out.println(args[i]); // command line argument
+            out.println("smallFile.txt"); // IDE
+
+            //TODO: send filesize in bytes
+            out.println(encryptedFileBytes.length);
+
+            //TODO: send byteString
+            out.println(DatatypeConverter.printBase64Binary(encryptedFileBytes));
+//        }
+        //TODO: Notify server to close connection
+        System.out.println("File transfer complete");
+        out.println("File transfer complete");
+
+        out.close();
+        in.close();
+        echoSocket.close();
     }
     
     public static X509Certificate CreateX509Cert(String cert) throws CertificateException, FileNotFoundException{
@@ -132,4 +218,27 @@ public class SecStoreClient {
         	System.out.println("Certificate verification failed!");
         }
     }
+
+    public static byte[] encryptFile(byte[] fileBytes, Cipher ecipher) throws Exception{
+        ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+
+        int start = 0;
+        int fileLength = fileBytes.length;
+        while (start < fileLength) {
+            byte[] tempBuff;
+            if (fileLength - start >= 117) {
+                tempBuff = ecipher.doFinal(fileBytes, start, 117);
+                //System.out.println(Arrays.toString(tempBuff));
+            } else {
+                tempBuff = ecipher.doFinal(fileBytes, start, fileLength - start);
+            }
+            byteOutput.write(tempBuff, 0, tempBuff.length);
+            start += 117;
+        }
+        byte[] encryptedFileBytes = byteOutput.toByteArray();
+        byteOutput.close();
+        return encryptedFileBytes;
+
+    }
+
 }
