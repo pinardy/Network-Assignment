@@ -81,7 +81,7 @@ public class SecStore {
 
 			//TODO: Wait for nonce
             String nonceString = in.readLine();
-            System.out.println(nonceString);
+//            System.out.println(nonceString);
             byte[] nonce = new byte[32];
             nonce = DatatypeConverter.parseBase64Binary(nonceString);
 
@@ -95,6 +95,9 @@ public class SecStore {
 
             // client sends its intention to start transfer
             String clientMessage = in.readLine();
+            System.out.println("\n---FILE TRANSFER---");
+
+            System.out.println(clientMessage);
             while(clientMessage.equals("Client is sending over file...")){
                 //TODO: client sends over upload start time
                 long startTime = Long.parseLong(in.readLine());
@@ -104,8 +107,10 @@ public class SecStore {
 
                 //TODO: client sends filesize in bytes over
                 int fileSize = Integer.parseInt(in.readLine());
-                System.out.println("File size " + fileSize);
+                System.out.println("File size: " + fileSize + " bytes");
                 byte[] encryptedBytes = new byte[fileSize];
+
+                // receive byteString
                 String byteString = in.readLine();
                 encryptedBytes = DatatypeConverter.parseBase64Binary(byteString);
 
@@ -114,12 +119,14 @@ public class SecStore {
 
                 //TODO: Write to file
 //                FileOutputStream fileOutput = new FileOutputStream(filename);
-                FileOutputStream fileOutput = new FileOutputStream("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\smallFile.txt");
+                FileOutputStream fileOutput = new FileOutputStream("C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\Server\\largeFile.txt");
                 fileOutput.write(decryptedFileBytes, 0, decryptedFileBytes.length);
                 fileOutput.close();
 
                 //TODO: Display upload duration
+                System.out.println("\nFile transfer complete!");
                 System.out.println("Time taken: " + (System.currentTimeMillis() - startTime) + " milliseconds for " + filename + " to be uploaded.");
+                out.println("Upload completed");
 
                 //TODO: Check client message
                 clientMessage = in.readLine();
@@ -143,6 +150,8 @@ public class SecStore {
         while (start < fileSize) {
             //System.out.println("Start: " + start);
             byte[] tempBuff;
+            /* RSA is a block cipher. No matter how long (or rather: short) the input,
+             it will produce a 128 byte long output. That explains the 128. */
             if (fileSize - start >= 128) {
                 tempBuff = dcipher.doFinal(encryptedData, start, 128);
             } else {
