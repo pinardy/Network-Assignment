@@ -1,4 +1,4 @@
-package CP1.client;
+package CP1.Client;
 
 import java.io.*;
 import java.net.*;
@@ -17,27 +17,23 @@ import javax.xml.bind.DatatypeConverter;
 
 public class SecStoreClient {
     private static final int PORT = 4321;
-    private static final String HOSTNAME = "localhost";
-    private static final String publicKeyFile = "publicServer.der";
+    private static final String HOSTNAME = "10.12.24.159";
     private static final String auMessage = "Hello, this is SecStore!";
-    private static final String CAcert = "CA.crt";
+    private static final String publicKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CP1\\Client\\publicServer.der";
+    private static final String CAcert = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CP1\\Client\\CA.crt";
+    private static final String inputFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CP1\\Client\\smallFile.txt";
     private static PublicKey key;
 
     public static void main(String[] args) throws Exception {
 
         // Establish connection with SecStore
-        Socket echoSocket = new Socket();
-        SocketAddress sockaddr = new InetSocketAddress(HOSTNAME, PORT);
-        echoSocket.connect(sockaddr, 100);
+        Socket echoSocket = new Socket(HOSTNAME, PORT);
 
         // Establish communication channels with server
         PrintWriter out = new PrintWriter(echoSocket.getOutputStream(), true);
         BufferedReader in =
                 new BufferedReader(
                         new InputStreamReader(echoSocket.getInputStream()));
-
-        // File to be uploaded to the server
-//        BufferedReader br = new BufferedReader(new FileReader("1001520.crt"));
 
         // Authentication of SecStore's identity
         // Requesting for authentication
@@ -168,7 +164,7 @@ public class SecStoreClient {
 
         // Get files (from command line arguments) & bytes for encryption
 //        File file = new File(args[0]); // cmd line
-        File file = new File("smallFile.txt"); // IDE
+        File file = new File(inputFile); // IDE
         byte[] fileBytes = new byte[(int) file.length()];
         BufferedInputStream fileInput;
         try {
@@ -186,8 +182,8 @@ public class SecStoreClient {
         byte[] encryptedFileBytes = encryptFile(fileBytes, ecipher);
 
         // Send over file name (Change depending on IDE/cmdline)
-//            out.println(args[0]); // cmd line 
-        out.println("smallFile.txt"); // IDE
+//        out.println(args[0]); // cmd line
+        out.println(inputFile); // IDE
 
         // Send filesize in bytes to server
         out.println(encryptedFileBytes.length);

@@ -1,4 +1,4 @@
-package CP1.server;
+package CP1.Server;
 
 import java.net.*;
 import java.nio.file.Files;
@@ -13,8 +13,8 @@ import java.io.*;
 
 public class SecStore {
 	private static final int PORT = 4321;
-	private static final String privateKeyFile = "privateServer.der";
-	private static final String myCert = "1001520.crt";
+	private static final String privateKeyFile = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CP1\\Server\\privateServer.der";
+	private static final String myCert = "C:\\Pinardy\\Term_5\\50.005 - Computer Systems Engineering\\ProgAssignment2\\Network-Assignment\\ProgAssignment2\\src\\CP1\\Server\\alice.crt";
 
 
 	public static void main(String[] args) throws Exception {
@@ -126,8 +126,8 @@ public class SecStore {
                 byte[] decryptedFileBytes = decryptFile(encryptedBytes, dcipher);
 
                 // Write to file
-                FileOutputStream fileOutput = new FileOutputStream("testOutput.txt"); // for testing
-//                FileOutputStream fileOutput = new FileOutputStream(fileName);
+//                FileOutputStream fileOutput = new FileOutputStream("testOutput.txt"); // for testing
+                FileOutputStream fileOutput = new FileOutputStream(fileName);
                 fileOutput.write(decryptedFileBytes, 0, decryptedFileBytes.length);
                 fileOutput.close();
 
